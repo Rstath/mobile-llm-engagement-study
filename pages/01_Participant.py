@@ -65,10 +65,6 @@ def hide_all_researcher_ui() -> None:
             --study-bg: #f3f6fb;
         }
 
-        .stApp {
-            background: var(--study-bg);
-        }
-
         .block-container {
             max-width: 100% !important;
             width: 100% !important;
@@ -80,92 +76,27 @@ def hide_all_researcher_ui() -> None:
         }
 
         .questionnaire-card {
-            width: min(100%, 1180px);
+            width: 100%;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: clamp(1rem, 2.5vw, 2rem);
-            border-radius: 26px;
-            background: #ffffff;
-            border: 1px solid var(--study-border);
-            box-shadow: 0 16px 45px rgba(15, 23, 42, 0.08);
-        }
-
-        .questionnaire-card h2,
-        .questionnaire-card h3 {
-            color: var(--study-text);
-            margin-top: 0;
-        }
-
-        .questionnaire-card .stCaption,
-        .questionnaire-card p {
-            color: var(--study-muted);
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
         }
 
         .questionnaire-section {
-            padding: 1.15rem;
-            margin: 1rem 0;
-            border: 1px solid #e5eaf3;
-            background: #ffffff;
-            border-radius: 18px;
+            margin-bottom: 24px;
         }
 
-        .questionnaire-section h3 {
-            font-size: 1.08rem;
-            margin-bottom: 0.65rem;
+        .questionnaire-card * {
+            color: #111827 !important;
         }
 
-        .questionnaire-card div[data-testid="stForm"] {
-            background: #ffffff !important;
-            border: 1px solid var(--study-border) !important;
-            border-radius: 22px !important;
-            padding: clamp(1rem, 2vw, 1.5rem) !important;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-        }
-
-        .questionnaire-card label,
-        .questionnaire-card [data-testid="stMarkdownContainer"] {
-            color: var(--study-text);
-        }
-
-        .questionnaire-card div[role="radiogroup"] {
-            gap: 0.45rem 0.8rem;
-        }
-
-        .questionnaire-card div[role="radiogroup"] label,
-        .questionnaire-card [data-testid="stCheckbox"] label {
-            border: 1px solid #dbe3ee;
-            background: #f8fbff;
-            border-radius: 14px;
-            padding: 0.45rem 0.65rem;
-            margin: 0.15rem 0;
-            transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .questionnaire-card div[role="radiogroup"] label:has(input:checked),
-        .questionnaire-card [data-testid="stCheckbox"] label:has(input:checked) {
-            border-color: var(--study-blue) !important;
-            background: var(--study-blue-soft) !important;
-            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.16);
-        }
-
-        .questionnaire-card input[type="radio"],
-        .questionnaire-card input[type="checkbox"] {
-            accent-color: var(--study-blue);
-        }
-
-        .questionnaire-card textarea,
-        .questionnaire-card input[type="text"] {
-            background: #ffffff !important;
-            border-color: #cbd5e1 !important;
-            border-radius: 14px !important;
-        }
-
-        .questionnaire-card div[data-testid="stFormSubmitButton"] button {
-            background: var(--study-blue) !important;
-            color: white !important;
-            border: 0 !important;
-            border-radius: 14px !important;
-            min-height: 46px;
-            font-weight: 700;
+        @media (max-width: 1440px) {
+            div[role="radiogroup"] {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
         }
 
         .bs-row {
@@ -192,11 +123,6 @@ def hide_all_researcher_ui() -> None:
         }
 
         @media (max-width: 760px) {
-            .block-container {
-                padding-left: 0;
-                padding-right: 0;
-            }
-
             .questionnaire-card {
                 border-radius: 0;
                 border-left: 0;
@@ -244,7 +170,7 @@ def hide_all_researcher_ui() -> None:
 
 
 def open_questionnaire_card(title: str, caption: str = "") -> None:
-    st.markdown('<div class="participant-questionnaire-page"><div class="questionnaire-card">', unsafe_allow_html=True)
+    st.markdown('<div class="participant-questionnaire-page">', unsafe_allow_html=True)
     st.subheader(title)
     if caption:
         st.caption(caption)
