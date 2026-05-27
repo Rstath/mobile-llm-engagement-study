@@ -172,7 +172,6 @@ def hide_all_researcher_ui() -> None:
             display: block !important;
             font-size: 1rem !important;
             font-weight: 600 !important;
-            color: #111827 !important;
             line-height: 1.55 !important;
             margin: 1.15rem 0 0.55rem 0 !important;
         }
