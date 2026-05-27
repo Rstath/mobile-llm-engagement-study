@@ -287,13 +287,13 @@ def inject_mobile_css():
         min-width: 42px !important;
     }
 
-    div[data-testid="stTextInput"] {
+    div[data-testid="stTextArea"] {
         width: 100% !important;
         min-width: 0 !important;
         flex: 1 1 auto !important;
     }
 
-    div[data-testid="stTextInput"] input {
+    div[data-testid="stTextArea"] textarea {
         border-radius: 22px !important;
         border: 1px solid #d1d1d6 !important;
         background-color: #ffffff !important;
@@ -306,21 +306,26 @@ def inject_mobile_css():
         transition: border-color 0.15s ease;
         cursor: text !important;
         caret-color: #0A84FF !important;
+        resize: none !important;
+        overflow-y: auto !important;
+        scrollbar-width: none !important;
+        max-height: 140px !important;
+        line-height: 1.35 !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }
 
-    div[data-testid="stTextInput"] input:focus {
+    div[data-testid="stTextArea"] textarea:focus {
         border: 1px solid #0A84FF !important;
         box-shadow: 0 0 0 1px rgba(10,132,255,0.15) !important;
     }
 
-    div[data-testid="stTextInput"] input:focus-visible {
+    div[data-testid="stTextArea"] textarea:focus-visible {
         outline: none !important;
         caret-color: #0A84FF !important;
     }
 
-    div[data-testid="stTextInput"] input::placeholder {
+    div[data-testid="stTextArea"] textarea::placeholder {
         color: #8e8e93 !important;
         opacity: 1 !important;
         font-weight: 400 !important;
@@ -357,6 +362,36 @@ def inject_mobile_css():
     div[data-testid="stFormSubmitButton"] button:disabled {
         background: #b8b8bd !important;
         color: white !important;
+    }
+
+
+    .native-chat-screen {
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+        height: calc(100vh - 92px);
+        min-height: 520px;
+        background: #f2f2f7;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .native-message-form div[data-testid="stForm"] {
+        width: 100% !important;
+        max-width: 760px !important;
+        margin: -92px auto 0 auto !important;
+    }
+
+    .native-message-form div[data-testid="stTextArea"] textarea {
+        max-height: 150px !important;
+        font-size: 16px !important;
+    }
+
+    div[data-testid="stTextArea"] textarea::-webkit-scrollbar {
+        display: none !important;
     }
 
     @media (max-width: 480px) {
@@ -490,13 +525,23 @@ def inject_mobile_css():
     components.html(
         """
         <script>
-        const waitForInput = setInterval(() => {
-            const input = window.parent.document.querySelector('input[placeholder="Message..."]');
-            if (input) {
-                input.focus();
-                clearInterval(waitForInput);
-            }
-        }, 150);
+        function autoGrowTextArea() {
+            const textarea = window.parent.document.querySelector('textarea[placeholder="Message..."]');
+            if (!textarea) return;
+            textarea.style.height = '42px';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+            textarea.scrollTop = textarea.scrollHeight;
+        }
+        function bindAutoGrow() {
+            const textarea = window.parent.document.querySelector('textarea[placeholder="Message..."]');
+            if (!textarea || textarea.dataset.autogrowBound === '1') return;
+            textarea.dataset.autogrowBound = '1';
+            textarea.addEventListener('input', autoGrowTextArea);
+            textarea.addEventListener('focus', autoGrowTextArea);
+            autoGrowTextArea();
+        }
+        setInterval(bindAutoGrow, 150);
+        setInterval(autoGrowTextArea, 200);
         </script>
         """,
         height=0,
@@ -538,6 +583,7 @@ def render_mobile_shell(
     agent_name: str = CHAT_NAME,
     device_type: Optional[str] = None,
     show_device: bool = False,
+    use_phone_shell: bool = True,
 ):
     """
     Render the mobile chat UI.
@@ -551,17 +597,19 @@ def render_mobile_shell(
     initial = agent_name[:1].upper() if agent_name else "A"
 
     html_parts = []
-    html_parts.append('<div class="phone-shell">')
-    html_parts.append('<div class="phone-screen">')
-
-    html_parts.append('<div class="status-bar">')
-    html_parts.append(f'<div>{current_time}</div>')
-    html_parts.append('<div class="status-icons">')
-    html_parts.append('<span class="signal">●●●</span>')
-    html_parts.append('<span>5G</span>')
-    html_parts.append('<div class="battery"><div class="battery-level"></div></div>')
-    html_parts.append('</div>')
-    html_parts.append('</div>')
+    if use_phone_shell:
+        html_parts.append('<div class="phone-shell">')
+        html_parts.append('<div class="phone-screen">')
+        html_parts.append('<div class="status-bar">')
+        html_parts.append(f'<div>{current_time}</div>')
+        html_parts.append('<div class="status-icons">')
+        html_parts.append('<span class="signal">●●●</span>')
+        html_parts.append('<span>5G</span>')
+        html_parts.append('<div class="battery"><div class="battery-level"></div></div>')
+        html_parts.append('</div>')
+        html_parts.append('</div>')
+    else:
+        html_parts.append('<div class="native-chat-screen">')
 
     html_parts.append('<div class="phone-header">')
     html_parts.append(f'<div class="phone-avatar">{html.escape(initial)}</div>')
@@ -608,7 +656,8 @@ def render_mobile_shell(
     html_parts.append('</div>')
     html_parts.append('<div class="input-spacer"></div>')
     html_parts.append('</div>')
-    html_parts.append('</div>')
+    if use_phone_shell:
+        html_parts.append('</div>')
 
     st.markdown("\n".join(html_parts), unsafe_allow_html=True)
 
@@ -632,15 +681,23 @@ def render_mobile_shell(
     )
 
 
-def mobile_message_form(disabled: bool = False):
-    with st.form("mobile_message_form", clear_on_submit=True):
-        text = st.text_input(
-            "Message",
-            placeholder="Message...",
-            label_visibility="collapsed",
-            disabled=disabled,
-            key="mobile_message_input",
-        )
-        submitted = st.form_submit_button("➤", disabled=disabled)
+def mobile_message_form(disabled: bool = False, native: bool = False):
+    wrapper_class = "native-message-form" if native else "phone-message-form"
+    st.markdown(f'<div class="{wrapper_class}">', unsafe_allow_html=True)
 
+    with st.form("mobile_message_form", clear_on_submit=True):
+        col_input, col_button = st.columns([1, 0.13])
+        with col_input:
+            text = st.text_area(
+                "Message",
+                placeholder="Message...",
+                label_visibility="collapsed",
+                disabled=disabled,
+                key="mobile_message_input",
+                height=42,
+            )
+        with col_button:
+            submitted = st.form_submit_button("➤", disabled=disabled)
+
+    st.markdown("</div>", unsafe_allow_html=True)
     return text.strip() if submitted and text and text.strip() else None

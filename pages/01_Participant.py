@@ -78,6 +78,7 @@ def hide_all_researcher_ui() -> None:
         <style>
         [data-testid="stSidebar"] {display: none;}
         [data-testid="collapsedControl"] {display: none;}
+        [data-testid="stSidebarCollapsedControl"] {display: none !important; visibility: hidden !important; width: 0 !important;}
         header {visibility: hidden;}
         footer {visibility: hidden;}
 
@@ -166,6 +167,24 @@ def hide_all_researcher_ui() -> None:
             line-height: 1.45 !important;
         }
 
+
+        .question-description {
+            display: block !important;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            color: #111827 !important;
+            line-height: 1.55 !important;
+            margin: 1.15rem 0 0.55rem 0 !important;
+        }
+
+        .question-description + div[data-testid="stCaptionContainer"] p,
+        .question-description + div [data-testid="stCaptionContainer"] p {
+            font-size: 0.98rem !important;
+            font-weight: 500 !important;
+            color: #4b5563 !important;
+            line-height: 1.55 !important;
+        }
+
         /* Standalone markdown question/description text */
         .questionnaire-section > div[data-testid="stMarkdownContainer"] p,
         .questionnaire-section [data-testid="stMarkdownContainer"] p,
@@ -241,7 +260,7 @@ def hide_all_researcher_ui() -> None:
             font-weight: 700;
         }
 
-        @media (max-width: 1440px) {
+        @media (max-width: 1024px) {
             .questionnaire-card div[role="radiogroup"] {
                 flex-direction: column !important;
                 align-items: stretch !important;
@@ -401,7 +420,10 @@ def render_pre_experiment_questionnaire() -> None:
     )
     field_error(errors, "text_communication_ease")
 
-    st.markdown("How frequently do you use the following text messaging styles when you communicate? *")
+    st.markdown(
+        '<p class="question-description">How frequently do you use the following text messaging styles when you communicate? *</p>',
+        unsafe_allow_html=True,
+    )    
     st.caption("Especially when you want to say a lot in your messages, consider whether you typically write everything in one long message or break your thoughts into multiple shorter consecutive messages.")
 
     field_anchor("style_one_two_words")
@@ -441,7 +463,10 @@ def render_pre_experiment_questionnaire() -> None:
     if used_ai_before == "Yes":
         section_heading("Experience with Conversational AI")
 
-        st.markdown("How often (if at all) do you use conversational AI assistants to accomplish various tasks? *")
+        st.markdown(
+            '<p class="question-description">How often (if at all) do you use conversational AI assistants to accomplish various tasks? *</p>',
+            unsafe_allow_html=True,
+        )
 
         field_anchor("ai_general_purpose")
         ai_general_purpose = st.radio(
@@ -463,7 +488,10 @@ def render_pre_experiment_questionnaire() -> None:
         )
         field_error(errors, "ai_specific_purpose")
 
-        st.markdown("Reflecting on your experience in interacting with various AI assistants, how often do you feel... *")
+        st.markdown(
+            '<p class="question-description">Reflecting on your experience in interacting with various AI assistants, how often do you feel... *</p>',
+            unsafe_allow_html=True,
+        )
         emotion_rows = [
             "Insecure", "Helpless", "Excluded", "Threatened", "Critical", "Frustrated",
             "Humiliated", "Bitter", "Hurt", "Guilty", "Powerless", "Lonely",
@@ -720,9 +748,13 @@ def main() -> None:
             typing=st.session_state.pending_agent_reply,
             device_type=device_type,
             show_device=False,
+            use_phone_shell=not native_chat,
         )
 
-    msg = mobile_message_form(disabled=st.session_state.pending_agent_reply)
+    msg = mobile_message_form(
+        disabled=st.session_state.pending_agent_reply,
+        native=native_chat,
+    )
     if msg:
         queue_human_message(msg)
         st.rerun()
