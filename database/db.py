@@ -22,6 +22,7 @@ def init_db():
             conversation_id TEXT PRIMARY KEY,
             participant_id TEXT,
             session_id TEXT,
+            assignment_id TEXT,
             created_at TEXT,
             topic_id TEXT,
             topic_category TEXT,
@@ -70,6 +71,7 @@ def init_db():
         migrations = {
             "device_type": "ALTER TABLE conversations ADD COLUMN device_type TEXT",
             "session_id": "ALTER TABLE conversations ADD COLUMN session_id TEXT",
+            "assignment_id": "ALTER TABLE conversations ADD COLUMN assignment_id TEXT",
             "pre_questionnaire_json": "ALTER TABLE conversations ADD COLUMN pre_questionnaire_json TEXT",
             "post_questionnaire_json": "ALTER TABLE conversations ADD COLUMN post_questionnaire_json TEXT",
         }
@@ -87,14 +89,15 @@ def save_conversation(meta: Dict[str, Any], transcript: List[Dict[str, Any]], me
 
         cur.execute("""
         INSERT INTO conversations (
-            conversation_id, participant_id, session_id, created_at, topic_id, topic_category,
+            conversation_id, participant_id, session_id, assignment_id, created_at, topic_id, topic_category,
             topic_prompt, agent_style, model_name, total_turns, run_notes, device_type,
             pre_questionnaire_json, post_questionnaire_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             conversation_id,
             meta.get("participant_id", ""),
             meta.get("session_id", ""),
+            meta.get("assignment_id", ""),
             created_at,
             meta["topic_id"],
             meta["topic_category"],

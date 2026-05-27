@@ -9,7 +9,7 @@ T = TypeVar("T")
 
 
 def stable_index(seed: str, modulo: int, salt: str = "") -> int:
-    """Return a reproducible index for a participant/session seed."""
+    """Return a reproducible index for a seed."""
     digest = hashlib.sha256(f"{seed}:{salt}".encode("utf-8")).hexdigest()
     return int(digest[:12], 16) % modulo
 
@@ -24,13 +24,18 @@ def new_session_id() -> str:
 
 def new_participant_id() -> str:
     """Create a hidden participant code for remote self-service sessions."""
-    return f"P-{uuid.uuid4().hex[:8].upper()}"
+    return f"P-{uuid.uuid4().hex[:10].upper()}"
 
 
-def assign_condition(participant_id: str):
-    """Assign topic/style once per participant in a reproducible way."""
-    clean_id = participant_id.strip() or "anonymous"
-    topic_index = stable_index(clean_id, len(TOPICS), "topic")
+def new_link_assignment_id() -> str:
+    """Hidden assignment seed generated per opened participant link/session."""
+    return f"L-{uuid.uuid4().hex[:12].upper()}"
+
+
+def assign_condition(seed: str):
+    """Assign topic/style once per hidden link/session seed."""
+    clean_seed = seed.strip() or new_link_assignment_id()
+    topic_index = stable_index(clean_seed, len(TOPICS), "topic")
     style_names = list(ENGAGEMENT_STYLES.keys())
-    style_name = stable_choice(style_names, clean_id, "style")
+    style_name = stable_choice(style_names, clean_seed, "style")
     return topic_index, style_name

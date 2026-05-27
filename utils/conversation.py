@@ -16,7 +16,7 @@ from agents.engagement_agent import get_agent_reply, get_opening_message
 from database.db import save_conversation
 from evaluation.embeddings import load_embedder
 from evaluation.metrics import compute_metrics
-from utils.randomization import assign_condition, new_participant_id, new_session_id
+from utils.randomization import assign_condition, new_link_assignment_id, new_participant_id, new_session_id
 
 
 def now_iso() -> str:
@@ -40,6 +40,8 @@ def initialize_conversation_state(include_researcher_defaults: bool = False) -> 
         "model_name": OPENAI_MODEL,
         "device_type": "Unknown",
         "session_id": None,
+        "participant_id": None,
+        "assignment_id": None,
         "condition_assigned": False,
         "study_started": False,
         "pre_experiment_complete": False,
@@ -55,7 +57,7 @@ def initialize_conversation_state(include_researcher_defaults: bool = False) -> 
         })
     else:
         defaults.update({
-            "participant_id": st.session_state.get("participant_id", "P001"),
+            "participant_id": st.session_state.get("participant_id"),
             "run_notes": st.session_state.get("run_notes", ""),
         })
 
@@ -88,20 +90,40 @@ def reset_conversation(keep_assignment: bool = True) -> None:
         st.session_state.condition_assigned = False
         st.session_state.study_started = False
         st.session_state.session_id = None
+        st.session_state.participant_id = None
+        st.session_state.assignment_id = None
+
+
+def ensure_hidden_remote_identity() -> None:
+    """Create hidden IDs as soon as a participant opens the remote link.
+
+    These IDs are not shown to participants. They are saved for the researcher so
+    every remote user/link opening remains separated in the exported data.
+    """
+    if not st.session_state.get("participant_id"):
+        st.session_state.participant_id = new_participant_id()
+    if not st.session_state.get("session_id"):
+        st.session_state.session_id = new_session_id()
+    if not st.session_state.get("assignment_id"):
+        st.session_state.assignment_id = new_link_assignment_id()
+
+    if not st.session_state.get("condition_assigned"):
+        topic_index, style_name = assign_condition(st.session_state.assignment_id)
+        st.session_state.topic_index = topic_index
+        st.session_state.agent_style_name = style_name
+        st.session_state.condition_assigned = True
 
 
 def start_remote_participant_session(participant_id: Optional[str] = None, pre_experiment_answers: Optional[Dict[str, Any]] = None) -> None:
-    """Start a self-service participant session with hidden participant code and stable assignment."""
-    cleaned_id = (participant_id or "").strip() or new_participant_id()
+    """Start a self-service participant session using hidden IDs and assignment."""
+    ensure_hidden_remote_identity()
 
-    topic_index, style_name = assign_condition(cleaned_id)
-    st.session_state.participant_id = cleaned_id
-    st.session_state.session_id = new_session_id()
-    st.session_state.topic_index = topic_index
-    st.session_state.agent_style_name = style_name
+    if participant_id:
+        # Optional researcher override; normal participants never see or enter this.
+        st.session_state.participant_id = participant_id.strip()
+
     st.session_state.pre_experiment_answers = pre_experiment_answers or st.session_state.get("pre_experiment_answers", {})
     st.session_state.pre_experiment_complete = True
-    st.session_state.condition_assigned = True
     st.session_state.study_started = True
     reset_conversation(keep_assignment=True)
 
@@ -194,6 +216,7 @@ def build_conversation_meta() -> Dict[str, Any]:
     return {
         "participant_id": st.session_state.get("participant_id", ""),
         "session_id": st.session_state.get("session_id", ""),
+        "assignment_id": st.session_state.get("assignment_id", ""),
         "topic_id": topic["id"],
         "topic_category": topic["category"],
         "topic_prompt": topic["prompt"],
@@ -237,18 +260,33 @@ def auto_save_when_complete(embedding_model: str) -> Optional[str]:
 
 
 def update_device_type_from_headers() -> str:
-    """Best-effort server-side device detection from browser headers."""
-    user_agent = ""
+    """Best-effort device detection from URL/device script first, then browser headers."""
+    # Client-side script writes ?device=mobile/tablet/desktop on first load.
+    try:
+        query_device = st.query_params.get("device", "")
+        if isinstance(query_device, list):
+            query_device = query_device[0] if query_device else ""
+    except Exception:
+        query_device = ""
 
+    query_device = str(query_device).lower().strip()
+    if query_device in {"mobile", "tablet", "desktop"}:
+        device_type = query_device.capitalize()
+        st.session_state.device_type = device_type
+        return device_type
+
+    user_agent = ""
     try:
         user_agent = st.context.headers.get("user-agent", "")  # Streamlit >= 1.36
     except Exception:
         user_agent = ""
 
     ua = user_agent.lower()
-    if any(token in ua for token in ["ipad", "tablet"]):
+    if any(token in ua for token in ["ipad", "tablet", "kindle", "silk"]):
         device_type = "Tablet"
-    elif any(token in ua for token in ["mobi", "iphone", "android"]):
+    elif "android" in ua and "mobile" not in ua:
+        device_type = "Tablet"
+    elif any(token in ua for token in ["mobi", "iphone", "ipod", "android"]):
         device_type = "Mobile"
     elif ua:
         device_type = "Desktop"

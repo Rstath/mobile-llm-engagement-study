@@ -212,7 +212,7 @@ def render_researcher_statistics(df: pd.DataFrame) -> None:
         st.info("No numeric questionnaire or metric fields available yet.")
         return
 
-    summary_cols = ["participant_id", "session_id", "device_type", "topic_id", "agent_style"] + analysis_cols
+    summary_cols = ["participant_id", "session_id", "assignment_id", "device_type", "topic_id", "agent_style"] + analysis_cols
     summary_cols = [c for c in summary_cols if c in df.columns]
     st.subheader("Analysis-ready dataset")
     st.dataframe(df[summary_cols], use_container_width=True)
@@ -311,6 +311,43 @@ def main():
         st.info(f"{topic['id']} – {topic['category']}\n\n{topic['prompt']}")
     with c2:
         st.info(f"{st.session_state.agent_style_name}\n\n{style['description']}")
+
+    st.subheader("Current Researcher Session")
+    st.caption("The participant chat UI is only shown on the Participant page. This page keeps researcher-only data, exports, and analysis.")
+
+    df = transcript_to_dataframe(st.session_state.transcript)
+    st.dataframe(df, use_container_width=True)
+    st.caption(f"Turns: {len(st.session_state.transcript)} / {st.session_state.target_turns}")
+
+    if not df.empty:
+        st.download_button("Download current transcript CSV", df.to_csv(index=False).encode("utf-8"), "current_transcript.csv", "text/csv")
+
+    metric_col, save_col = st.columns(2)
+    with metric_col:
+        if st.button("Compute Metrics"):
+            if len(st.session_state.transcript) < 2:
+                st.warning("At least two turns are required.")
+            else:
+                compute_current_metrics(topic["prompt"], EMBEDDING_MODEL)
+
+    with save_col:
+        if st.button("Save Conversation"):
+            if len(st.session_state.transcript) < 2:
+                st.warning("Conversation is too short to save.")
+            else:
+                if st.session_state.metrics is None:
+                    compute_current_metrics(topic["prompt"], EMBEDDING_MODEL)
+                cid = save_current_conversation(st.session_state.metrics)
+                st.success(f"Saved conversation: {cid}")
+
+    if st.session_state.metrics:
+        st.json(st.session_state.metrics)
+
+    auto_saved_id = auto_save_when_complete(EMBEDDING_MODEL)
+    if auto_saved_id:
+        st.success(f"Conversation auto-saved: {auto_saved_id}")
+    elif st.session_state.saved_conversation_id:
+        st.caption(f"Saved conversation: {st.session_state.saved_conversation_id}")
 
     st.divider()
     st.header("Stored Results")

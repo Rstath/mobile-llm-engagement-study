@@ -266,7 +266,7 @@ def inject_mobile_css():
         flex-direction: row !important;
         align-items: center !important;
         gap: 8px !important;
-        width: 100% !important;
+        width: 90% !important;
         flex-wrap: nowrap !important;
     }
 
@@ -473,6 +473,71 @@ def inject_mobile_css():
         overflow: visible !important;
     }
 
+
+
+    .native-chat-shell {
+        width: min(100%, 860px);
+        margin: 0 auto;
+        border-radius: 24px;
+        background: #f2f2f7;
+        box-shadow: 0 10px 35px rgba(15,23,42,0.08);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        min-height: min(78vh, 760px);
+        display: flex;
+        flex-direction: column;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    .native-chat-shell .phone-screen {
+        height: min(78vh, 760px);
+        min-height: 520px;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .native-chat-shell .status-bar {
+        display: none;
+    }
+
+    .native-chat-shell .phone-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .native-chat-shell .phone-messages {
+        padding: clamp(12px, 3vw, 22px);
+    }
+
+    .native-chat-shell .bubble {
+        max-width: min(82%, 560px);
+    }
+
+    .native-chat-form div[data-testid="stForm"] {
+        width: min(100%, 860px);
+        margin: -92px auto 0 auto;
+    }
+
+    @media (max-width: 900px) {
+        .native-chat-shell {
+            border-radius: 0;
+            border-left: 0;
+            border-right: 0;
+            min-height: 82vh;
+            box-shadow: none;
+        }
+
+        .native-chat-shell .phone-screen {
+            height: 82vh;
+            min-height: 520px;
+        }
+
+        .native-chat-shell .bubble {
+            max-width: 86%;
+        }
+    }
+
     .participant-complete {
         max-width: 390px;
         margin: 0.75rem auto;
@@ -535,30 +600,33 @@ def render_mobile_shell(
     agent_name: str = CHAT_NAME,
     device_type: Optional[str] = None,
     show_device: bool = False,
+    use_phone_shell: bool = True,
 ):
     """
-    Render the mobile chat UI.
+    Render the chat UI.
 
-    Use typing=True while the agent response is delayed/pending.
-    Use show_device=True only in the researcher/admin view; keep it False for participants.
+    Desktop/laptop participants see a phone mockup. Mobile/tablet participants see
+    a native responsive chat so the app does not render a phone inside a phone.
     """
     inject_mobile_css()
 
     current_time = datetime.now().strftime("%H:%M")
     initial = agent_name[:1].upper() if agent_name else "A"
+    outer_cls = "phone-shell" if use_phone_shell else "native-chat-shell"
 
     html_parts = []
-    html_parts.append('<div class="phone-shell">')
+    html_parts.append(f'<div class="{outer_cls}">')
     html_parts.append('<div class="phone-screen">')
 
-    html_parts.append('<div class="status-bar">')
-    html_parts.append(f'<div>{current_time}</div>')
-    html_parts.append('<div class="status-icons">')
-    html_parts.append('<span class="signal">●●●</span>')
-    html_parts.append('<span>5G</span>')
-    html_parts.append('<div class="battery"><div class="battery-level"></div></div>')
-    html_parts.append('</div>')
-    html_parts.append('</div>')
+    if use_phone_shell:
+        html_parts.append('<div class="status-bar">')
+        html_parts.append(f'<div>{current_time}</div>')
+        html_parts.append('<div class="status-icons">')
+        html_parts.append('<span class="signal">●●●</span>')
+        html_parts.append('<span>5G</span>')
+        html_parts.append('<div class="battery"><div class="battery-level"></div></div>')
+        html_parts.append('</div>')
+        html_parts.append('</div>')
 
     html_parts.append('<div class="phone-header">')
     html_parts.append(f'<div class="phone-avatar">{html.escape(initial)}</div>')
@@ -609,34 +677,28 @@ def render_mobile_shell(
 
     st.markdown("\n".join(html_parts), unsafe_allow_html=True)
 
-    # Auto-scroll safely through a hidden component iframe. This keeps the JS out of
-    # st.markdown, so it never appears as raw text in the chat.
     components.html(
         """
         <script>
         (function () {
             const parentDoc = window.parent.document;
-
             function getMessagesBox() {
                 const boxes = parentDoc.querySelectorAll('#phone-messages');
                 return boxes.length ? boxes[boxes.length - 1] : null;
             }
-
             function scrollToBottom() {
                 const messages = getMessagesBox();
                 if (!messages) return false;
                 messages.scrollTop = messages.scrollHeight;
                 return true;
             }
-
             function runScrollSequence() {
                 scrollToBottom();
                 requestAnimationFrame(scrollToBottom);
-                setTimeout(scrollToBottom, 60);
-                setTimeout(scrollToBottom, 180);
-                setTimeout(scrollToBottom, 420);
+                setTimeout(scrollToBottom, 80);
+                setTimeout(scrollToBottom, 220);
+                setTimeout(scrollToBottom, 520);
             }
-
             let tries = 0;
             const waitForMessages = setInterval(() => {
                 tries += 1;
@@ -645,14 +707,13 @@ def render_mobile_shell(
                     runScrollSequence();
                 }
             }, 50);
-
             const messages = getMessagesBox();
             if (messages && !messages.dataset.autoScrollBound) {
                 messages.dataset.autoScrollBound = 'true';
                 const observer = new MutationObserver(runScrollSequence);
                 observer.observe(messages, { childList: true, subtree: true });
-                runScrollSequence();
             }
+            runScrollSequence();
         })();
         </script>
         """,
@@ -660,7 +721,11 @@ def render_mobile_shell(
     )
 
 
-def mobile_message_form(disabled: bool = False):
+def mobile_message_form(disabled: bool = False, native: bool = False):
+    form_class = "native-chat-form" if native else ""
+    if form_class:
+        st.markdown(f'<div class="{form_class}">', unsafe_allow_html=True)
+
     with st.form("mobile_message_form", clear_on_submit=True):
         text = st.text_input(
             "Message",
@@ -670,5 +735,8 @@ def mobile_message_form(disabled: bool = False):
             key="mobile_message_input",
         )
         submitted = st.form_submit_button("➤", disabled=disabled)
+
+    if form_class:
+        st.markdown("</div>", unsafe_allow_html=True)
 
     return text.strip() if submitted and text and text.strip() else None
