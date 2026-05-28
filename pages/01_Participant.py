@@ -246,11 +246,33 @@ def hide_all_researcher_ui() -> None:
             accent-color: #2563eb;
         }
 
+        .questionnaire-card div[data-testid="stSlider"] {
+            margin-bottom: 1.25rem !important;
+        }
+
+        .questionnaire-card div[data-testid="stSlider"] > label p {
+            font-size: 1.08rem !important;
+            font-weight: 700 !important;
+            line-height: 1.45 !important;
+        }
+
+        .likert-endpoints {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            color: #4b5563;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: -0.45rem 0 1rem 0;
+        }
+
         .questionnaire-card textarea {
             border: 1px solid #cbd5e1 !important;
             border-radius: 8px !important;
             min-height: 110px !important;
-            font-size: 1rem !important;
+            font-size: 16px !important;
+            line-height: 1.45 !important;
+            resize: vertical !important;
         }
 
         .questionnaire-card div[data-testid="stFormSubmitButton"] button {
@@ -260,13 +282,39 @@ def hide_all_researcher_ui() -> None:
         }
 
         @media (max-width: 1024px) {
-            .questionnaire-card div[role="radiogroup"] {
-                flex-direction: column !important;
-                align-items: stretch !important;
+            /* Force Streamlit radio widget wrapper to full width */
+            div[data-testid="stElementContainer"]:has(.stRadio),
+            div[data-testid="stElementContainer"]:has(.stRadio) > div,
+            div[data-testid="stRadio"],
+            .stRadio {
+                width: 100% !important;
+                max-width: 100% !important;
             }
 
-            .questionnaire-card div[role="radiogroup"] label {
-                width: 100%;
+            /* Force the radiogroup itself vertical */
+            div[data-testid="stRadio"] div[role="radiogroup"] {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                gap: 0.65rem !important;
+            }
+
+            /* Force each option to occupy its own row */
+            div[data-testid="stRadio"] div[role="radiogroup"] label[data-baseweb="radio"] {
+                display: flex !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 100% !important;
+                flex: 0 0 100% !important;
+                box-sizing: border-box !important;
+                margin: 0 !important;
+            }
+
+            div[data-testid="stRadio"] div[role="radiogroup"] label[data-baseweb="radio"] p {
+                white-space: normal !important;
+                margin: 0 !important;
             }
         }
 
@@ -341,7 +389,7 @@ def clear_questionnaire_errors() -> None:
 
 
 def open_questionnaire_card(title: str, caption: str = "") -> None:
-    st.markdown('<div class="participant-questionnaire-page">', unsafe_allow_html=True)
+    st.markdown('<div class="participant-questionnaire-page"><div class="questionnaire-card">', unsafe_allow_html=True)
     st.subheader(title)
     if caption:
         st.caption(caption)
@@ -359,6 +407,16 @@ def section_heading(title: str, caption: str = "") -> None:
 
 def close_section() -> None:
     st.markdown("</div>", unsafe_allow_html=True)
+
+
+def likert_range(label: str, key: str, left: str, right: str, value: int = 3) -> int:
+    """Render a 1-5 Likert question as a compact range slider."""
+    selected = st.slider(label, min_value=1, max_value=5, value=value, step=1, key=key)
+    st.markdown(
+        f'<div class="likert-endpoints"><span>1 = {left}</span><span>5 = {right}</span></div>',
+        unsafe_allow_html=True,
+    )
+    return selected
 
 
 def render_pre_experiment_questionnaire() -> None:
@@ -409,13 +467,11 @@ def render_pre_experiment_questionnaire() -> None:
     section_heading("Mobile Communication Habits")
 
     field_anchor("text_communication_ease")
-    text_communication_ease = st.radio(
+    text_communication_ease = likert_range(
         "How easy do you find it to communicate through text messages? *",
-        [1, 2, 3, 4, 5],
-        index=None,
-        horizontal=True,
-        captions=["Not easy at all", "", "", "", "Very easy"],
         key="pre_text_communication_ease",
+        left="Not easy at all",
+        right="Very easy",
     )
     field_error(errors, "text_communication_ease")
 
@@ -595,57 +651,57 @@ def render_post_experiment_questionnaire() -> None:
         section_heading("Conversation experience")
 
         field_anchor("engaging")
-        engaging = st.radio("How engaging did you find the conversation? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not engaging at all", "", "", "", "Very engaging"])
+        engaging = likert_range("How engaging did you find the conversation? *", "post_engaging", "Not engaging at all", "Very engaging")
         field_error(errors, "engaging")
 
         field_anchor("willing_continue")
-        willing_continue = st.radio("How willing would you be to continue this conversation? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not willing at all", "", "", "", "Very willing"])
+        willing_continue = likert_range("How willing would you be to continue this conversation? *", "post_willing_continue", "Not willing at all", "Very willing")
         field_error(errors, "willing_continue")
 
         field_anchor("coherent")
-        coherent = st.radio("How coherent were the responses during the conversation? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not coherent at all", "", "", "", "Very coherent"])
+        coherent = likert_range("How coherent were the responses during the conversation? *", "post_coherent", "Not coherent at all", "Very coherent")
         field_error(errors, "coherent")
 
         field_anchor("on_topic")
-        on_topic = st.radio("To what extent did the conversation stay on topic? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not at all", "", "", "", "Completely"])
+        on_topic = likert_range("To what extent did the conversation stay on topic? *", "post_on_topic", "Not at all", "Completely")
         field_error(errors, "on_topic")
 
         field_anchor("natural")
-        natural = st.radio("How natural did the conversation feel? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not natural at all", "", "", "", "Very natural"])
+        natural = likert_range("How natural did the conversation feel? *", "post_natural", "Not natural at all", "Very natural")
         field_error(errors, "natural")
 
         field_anchor("smooth")
-        smooth = st.radio("How smooth was the flow of the conversation? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not at all", "", "", "", "Very much"])
+        smooth = likert_range("How smooth was the flow of the conversation? *", "post_smooth", "Not at all", "Very much")
         field_error(errors, "smooth")
 
         field_anchor("repetitive")
-        repetitive = st.radio("Did the conversation feel repetitive at any point? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not at all repetitive", "", "", "", "Very repetitive"])
+        repetitive = likert_range("Did the conversation feel repetitive at any point? *", "post_repetitive", "Not at all repetitive", "Very repetitive")
         field_error(errors, "repetitive")
 
         field_anchor("followups")
-        followups = st.radio("Did the system ask relevant or helpful follow-up questions? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Not at all", "", "", "", "Very much"])
+        followups = likert_range("Did the system ask relevant or helpful follow-up questions? *", "post_followups", "Not at all", "Very much")
         field_error(errors, "followups")
 
         field_anchor("balanced")
-        balanced = st.radio("How balanced did the conversation feel? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Very unbalanced", "", "", "", "Very balanced"])
+        balanced = likert_range("How balanced did the conversation feel? *", "post_balanced", "Very unbalanced", "Very balanced")
         field_error(errors, "balanced")
 
         field_anchor("overall")
-        overall = st.radio("Overall, how would you rate this conversation? *", [1, 2, 3, 4, 5], index=None, horizontal=True, captions=["Very poor", "", "", "", "Excellent"])
+        overall = likert_range("Overall, how would you rate this conversation? *", "post_overall", "Very poor", "Excellent")
         field_error(errors, "overall")
         close_section()
 
         section_heading("Open feedback")
 
         field_anchor("liked")
-        liked = st.text_area("Please mention up to 3 things that you liked about the conversation. *")
+        liked = st.text_area("Please mention up to 3 things that you liked about the conversation. *", key="post_liked", height=120)
         field_error(errors, "liked")
 
         field_anchor("disliked")
-        disliked = st.text_area("Please mention up to 3 things that you did not like about the conversation. *")
+        disliked = st.text_area("Please mention up to 3 things that you did not like about the conversation. *", key="post_disliked", height=120)
         field_error(errors, "disliked")
 
-        improvements = st.text_area("Do you have any ideas about how the conversational assistant could be improved? What would you remove, add or change in its behaviour?")
+        improvements = st.text_area("Do you have any ideas about how the conversational assistant could be improved? What would you remove, add or change in its behaviour?", key="post_improvements", height=120)
         close_section()
 
         submitted = st.form_submit_button("Submit", use_container_width=True)
@@ -662,9 +718,9 @@ def render_post_experiment_questionnaire() -> None:
             "relevant_followups_1_5": followups,
             "balanced_1_5": balanced,
             "overall_rating_1_5": overall,
-            "liked_up_to_3": liked.strip(),
-            "disliked_up_to_3": disliked.strip(),
-            "improvement_ideas": improvements.strip(),
+            "liked_up_to_3": (liked or "").strip(),
+            "disliked_up_to_3": (disliked or "").strip(),
+            "improvement_ideas": (improvements or "").strip(),
         }
 
         validation_errors: Dict[str, str] = {}
@@ -679,8 +735,8 @@ def render_post_experiment_questionnaire() -> None:
             "followups": followups,
             "balanced": balanced,
             "overall": overall,
-            "liked": liked.strip(),
-            "disliked": disliked.strip(),
+            "liked": (liked or "").strip(),
+            "disliked": (disliked or "").strip(),
         }
         for field_id, value in required_fields.items():
             if value in (None, ""):

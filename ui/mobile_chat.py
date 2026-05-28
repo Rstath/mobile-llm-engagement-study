@@ -247,53 +247,57 @@ def inject_mobile_css():
         40% { transform: translateY(-3px); opacity: 1; }
     }
 
-    .input-spacer {
-        height: 92px;
-    }
-
-    div[data-testid="stForm"] {
-        width: min(100%, 390px);
-        margin: -92px auto 0 auto;
+    .phone-message-form div[data-testid="stForm"] {
+        width: min(calc(100% - 64px), 350px) !important;
+        max-width: 350px !important;
+        margin: calc(-1 * var(--composer-height, 92px)) auto 0 auto !important;
         background: transparent;
         border: none;
-        padding: 0 clamp(12px, 4vw, 17px) 12px clamp(12px, 4vw, 17px);
+        padding: 0 0 12px 0 !important;
         position: relative;
         z-index: 5;
+        box-sizing: border-box !important;
     }
 
-    div[data-testid="stForm"] > div {
+    .phone-message-form div[data-testid="stForm"] > div,
+    .native-message-form div[data-testid="stForm"] > div {
         display: flex !important;
         flex-direction: row !important;
-        align-items: center !important;
+        align-items: flex-end !important;
         gap: 8px !important;
         width: 100% !important;
         flex-wrap: nowrap !important;
     }
 
-    div[data-testid="column"] {
+    .phone-message-form div[data-testid="column"],
+    .native-message-form div[data-testid="column"] {
         width: auto !important;
         min-width: 0 !important;
         flex: unset !important;
     }
 
-    div[data-testid="column"]:first-child {
+    .phone-message-form div[data-testid="column"]:first-child,
+    .native-message-form div[data-testid="column"]:first-child {
         flex: 1 1 auto !important;
         min-width: 0 !important;
     }
 
-    div[data-testid="column"]:last-child {
+    .phone-message-form div[data-testid="column"]:last-child,
+    .native-message-form div[data-testid="column"]:last-child {
         flex: 0 0 42px !important;
         width: 42px !important;
         min-width: 42px !important;
     }
 
-    div[data-testid="stTextArea"] {
+    .phone-message-form div[data-testid="stTextArea"],
+    .native-message-form div[data-testid="stTextArea"] {
         width: 100% !important;
         min-width: 0 !important;
         flex: 1 1 auto !important;
     }
 
-    div[data-testid="stTextArea"] textarea {
+    .phone-message-form div[data-testid="stTextArea"] textarea,
+    .native-message-form div[data-testid="stTextArea"] textarea {
         border-radius: 22px !important;
         border: 1px solid #d1d1d6 !important;
         background-color: #ffffff !important;
@@ -306,13 +310,17 @@ def inject_mobile_css():
         transition: border-color 0.15s ease;
         cursor: text !important;
         caret-color: #0A84FF !important;
-        resize: none !important;
+        resize: vertical !important;
         overflow-y: auto !important;
         scrollbar-width: none !important;
-        max-height: 140px !important;
+        max-height: min(26vh, 150px) !important;
         line-height: 1.35 !important;
         width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
+        white-space: pre-wrap !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
     }
 
     div[data-testid="stTextArea"] textarea:focus {
@@ -331,13 +339,15 @@ def inject_mobile_css():
         font-weight: 400 !important;
     }
 
-    div[data-testid="stFormSubmitButton"] {
+    .phone-message-form div[data-testid="stFormSubmitButton"],
+    .native-message-form div[data-testid="stFormSubmitButton"] {
         flex: 0 0 42px !important;
         width: 42px !important;
         min-width: 42px !important;
     }
 
-    div[data-testid="stFormSubmitButton"] button {
+    .phone-message-form div[data-testid="stFormSubmitButton"] button,
+    .native-message-form div[data-testid="stFormSubmitButton"] button {
         border-radius: 50% !important;
         width: 42px !important;
         height: 42px !important;
@@ -354,14 +364,58 @@ def inject_mobile_css():
         justify-content: center !important;
     }
 
-    div[data-testid="stFormSubmitButton"] button:hover {
+    .phone-message-form div[data-testid="stFormSubmitButton"] button:hover,
+    .native-message-form div[data-testid="stFormSubmitButton"] button:hover {
         background: #006FE6 !important;
         color: white !important;
     }
 
-    div[data-testid="stFormSubmitButton"] button:disabled {
+    .phone-message-form div[data-testid="stFormSubmitButton"] button:disabled,
+    .native-message-form div[data-testid="stFormSubmitButton"] button:disabled {
         background: #b8b8bd !important;
         color: white !important;
+    }
+
+    .phone-message-form div[data-testid="stForm"] > div {
+        max-width: 100% !important;
+    }
+
+    .phone-message-form div[data-testid="stTextArea"] textarea {
+        height: 44px;
+        resize: none !important;
+        overflow-x: hidden !important;
+    }
+
+    .phone-message-form div[data-testid="stFormSubmitButton"],
+    .phone-message-form div[data-testid="stFormSubmitButton"] button {
+        flex: 0 0 42px !important;
+        align-self: flex-end !important;
+    }
+
+
+    /* Keep the simulated-phone composer visually inside the phone screen.
+       As the textarea grows, the spacer and negative margin are recalculated
+       from --composer-height, so the composer expands upward instead of
+       dropping below the frame. */
+    .phone-shell {
+        position: relative !important;
+    }
+
+    .phone-message-form div[data-testid="stForm"],
+    body.phone-frame-active .native-message-form div[data-testid="stForm"] {
+        overflow: visible !important;
+    }
+
+    .phone-message-form div[data-testid="stTextAreaRootElement"],
+    body.phone-frame-active .native-message-form div[data-testid="stTextAreaRootElement"] {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        border-radius: 22px !important;
+    }
+
+    .phone-message-form div[data-testid="stFormSubmitButton"],
+    body.phone-frame-active .native-message-form div[data-testid="stFormSubmitButton"] {
+        padding-bottom: 1px !important;
     }
 
 
@@ -369,8 +423,8 @@ def inject_mobile_css():
         width: 100%;
         max-width: 760px;
         margin: 0 auto;
-        height: calc(100vh - 92px);
-        min-height: 520px;
+        height: calc(var(--chat-vvh, 100dvh) - var(--composer-height, 78px));
+        min-height: 0;
         background: #f2f2f7;
         display: flex;
         flex-direction: column;
@@ -379,19 +433,103 @@ def inject_mobile_css():
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
+    .native-chat-screen .phone-messages {
+        padding-bottom: 12px !important;
+    }
+
     .native-message-form div[data-testid="stForm"] {
+        position: fixed !important;
+        left: 50% !important;
+        bottom: var(--keyboard-offset, 0px) !important;
+        transform: translateX(-50%) !important;
         width: 100% !important;
         max-width: 760px !important;
-        margin: -92px auto 0 auto !important;
+        margin: 0 auto !important;
+        padding: 8px max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+        background: rgba(242, 242, 247, 0.96) !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-sizing: border-box !important;
+        z-index: 9999 !important;
+    }
+
+    .native-message-form div[data-testid="stForm"] > div {
+        align-items: flex-end !important;
+        gap: 8px !important;
+    }
+
+    .native-message-form div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+
+    .native-message-form div[data-testid="column"]:last-child {
+        flex: 0 0 44px !important;
+        width: 44px !important;
+        min-width: 44px !important;
     }
 
     .native-message-form div[data-testid="stTextArea"] textarea {
-        max-height: 150px !important;
+        min-height: 44px !important;
+        height: 44px;
+        max-height: min(30dvh, 160px) !important;
         font-size: 16px !important;
+        -webkit-text-size-adjust: 100%;
+        touch-action: manipulation;
+        resize: none !important;
+        overflow-y: auto !important;
+        line-height: 1.35 !important;
+    }
+
+    .native-message-form div[data-testid="stFormSubmitButton"],
+    .native-message-form div[data-testid="stFormSubmitButton"] button {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+
+    /* Safety: if a phone shell is visible, the composer must behave like the
+       simulated phone composer, not like the full-width native mobile composer. */
+    body.phone-frame-active .native-message-form div[data-testid="stForm"] {
+        position: relative !important;
+        left: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: min(calc(100% - 64px), 350px) !important;
+        max-width: 350px !important;
+        margin: calc(-1 * var(--composer-height, 92px)) auto 0 auto !important;
+        padding: 0 0 12px 0 !important;
+        background: transparent !important;
+        border: none !important;
+        z-index: 20 !important;
+        box-sizing: border-box !important;
+    }
+
+    body.phone-frame-active .native-message-form div[data-testid="stTextArea"] textarea {
+        max-height: min(26vh, 150px) !important;
+        font-size: 15px !important;
+    }
+
+    body.phone-frame-active .native-chat-screen {
+        width: min(100%, 410px) !important;
+        max-width: 410px !important;
     }
 
     div[data-testid="stTextArea"] textarea::-webkit-scrollbar {
         display: none !important;
+    }
+
+    @media (hover: none) and (pointer: coarse), (max-width: 1024px) {
+        .native-message-form div[data-testid="stForm"] {
+            width: 100vw !important;
+            max-width: 100vw !important;
+        }
+
+        .native-chat-screen {
+            width: 100vw;
+            max-width: 100vw;
+            height: calc(var(--chat-vvh, 100dvh) - var(--composer-height, 78px));
+        }
     }
 
     @media (max-width: 480px) {
@@ -406,8 +544,8 @@ def inject_mobile_css():
         }
 
         .phone-screen {
-            height: 92vh;
-            min-height: 560px;
+            height: 92dvh;
+            min-height: min(560px, 92dvh);
         }
 
         .status-bar {
@@ -430,12 +568,9 @@ def inject_mobile_css():
             max-width: 82%;
         }
 
-        .input-spacer {
-            height: 88px;
-        }
-
-        div[data-testid="stForm"] {
-            margin-top: -88px;
+        .phone-message-form div[data-testid="stForm"] {
+            width: min(calc(100% - 48px), 340px) !important;
+            max-width: 340px !important;
         }
     }
 
@@ -454,12 +589,9 @@ def inject_mobile_css():
             padding: 7px 10px;
         }
 
-        .input-spacer {
-            height: 82px;
-        }
-
-        div[data-testid="stForm"] {
-            margin-top: -82px;
+        .phone-message-form div[data-testid="stForm"] {
+            width: min(calc(100% - 48px), 340px) !important;
+            max-width: 340px !important;
         }
     }
 
@@ -501,15 +633,294 @@ def inject_mobile_css():
     .st-bo,
     .st-d0,
     .st-cj,
-    .st-ea, {
+    .st-ea {
         border-left-color: transparent !important;
     }
 
     .st-bx,
-    .st-bc
+    .st-bc,
     .st-eb {
         overflow: visible !important;
     }
+
+
+
+    /* Final visual restore for the simulated phone composer.
+       Streamlit/BaseWeb hashed classes can override borders/backgrounds,
+       so these selectors intentionally target the stable data-testid attributes. */
+    .phone-shell {
+        border: clamp(7px, 2.5vw, 13px) solid #1f1f1f !important;
+        background: #111 !important;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.28) !important;
+    }
+
+    .phone-screen,
+    .native-chat-screen {
+        background: #f2f2f7 !important;
+    }
+
+    .phone-message-form div[data-testid="stForm"],
+    body.phone-frame-active .native-message-form div[data-testid="stForm"] {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .phone-message-form div[data-testid="stTextArea"] label,
+    .native-message-form div[data-testid="stTextArea"] label {
+        display: none !important;
+    }
+
+    .phone-message-form div[data-testid="stTextAreaRootElement"],
+    .phone-message-form div[data-baseweb="base-input"],
+    body.phone-frame-active .native-message-form div[data-testid="stTextAreaRootElement"],
+    body.phone-frame-active .native-message-form div[data-baseweb="base-input"] {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        border: 1px solid #d1d1d6 !important;
+        border-radius: 22px !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+    }
+
+    .phone-message-form div[data-baseweb="base-input"],
+    body.phone-frame-active .native-message-form div[data-baseweb="base-input"] {
+        border: 0 !important;
+    }
+
+    .phone-message-form textarea[placeholder="Message..."],
+    body.phone-frame-active .native-message-form textarea[placeholder="Message..."] {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #111111 !important;
+        border: 0 !important;
+        border-radius: 22px !important;
+        box-shadow: none !important;
+        caret-color: #0A84FF !important;
+        padding: 10px 16px !important;
+    }
+
+    .phone-message-form textarea[placeholder="Message..."]:focus,
+    body.phone-frame-active .native-message-form textarea[placeholder="Message..."]:focus {
+        border: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    .phone-message-form div[data-testid="stTextAreaRootElement"]:focus-within,
+    body.phone-frame-active .native-message-form div[data-testid="stTextAreaRootElement"]:focus-within {
+        border-color: #0A84FF !important;
+        box-shadow: 0 0 0 1px rgba(10,132,255,0.15) !important;
+    }
+
+    .phone-message-form div[data-testid="stFormSubmitButton"] button,
+    body.phone-frame-active .native-message-form div[data-testid="stFormSubmitButton"] button {
+        background: #0A84FF !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 50% !important;
+        box-shadow: none !important;
+    }
+
+    .phone-message-form div[data-testid="stFormSubmitButton"] button p,
+    body.phone-frame-active .native-message-form div[data-testid="stFormSubmitButton"] button p {
+        color: #ffffff !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+    }
+
+
+
+    /* Final position fix: the desktop/simulated-phone composer must sit inside
+       the phone screen at the bottom, using the same placement as the inspected DOM. */
+    #phone-form-anchor.phone-message-form {
+        width: 100% !important;
+        position: relative !important;
+        z-index: 30 !important;
+        flex: 0 0 auto !important;
+    }
+
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stForm"] {
+        position: relative !important;
+        left: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: min(calc(100% - 64px), 350px) !important;
+        max-width: 350px !important;
+        margin: calc(-1 * var(--composer-height, 92px)) auto 0 auto !important;
+        padding: 0 0 12px 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        z-index: 40 !important;
+        overflow: visible !important;
+    }
+
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stForm"] > div {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-end !important;
+        gap: 8px !important;
+        width: 100% !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="column"]:last-child {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+    }
+
+    .phone-message-form-source {
+        display: contents !important;
+    }
+
+
+
+    /* =========================================================
+       FINAL COMPOSER SAME-LINE LOCK
+       Keeps textarea + send button in one row at every resolution.
+       This must stay near the end of the stylesheet so it wins over
+       Streamlit/BaseWeb responsive column rules.
+       ========================================================= */
+    .phone-message-form div[data-testid="stForm"],
+    .native-message-form div[data-testid="stForm"],
+    body.phone-frame-active .native-message-form div[data-testid="stForm"],
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stForm"] {
+        box-sizing: border-box !important;
+        overflow: visible !important;
+    }
+
+    .phone-message-form div[data-testid="stForm"] > div,
+    .native-message-form div[data-testid="stForm"] > div,
+    body.phone-frame-active .native-message-form div[data-testid="stForm"] > div,
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stForm"] > div,
+    .phone-message-form div[data-testid="stHorizontalBlock"],
+    .native-message-form div[data-testid="stHorizontalBlock"],
+    body.phone-frame-active .native-message-form div[data-testid="stHorizontalBlock"],
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-end !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .phone-message-form div[data-testid="column"],
+    .native-message-form div[data-testid="column"],
+    body.phone-frame-active .native-message-form div[data-testid="column"],
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .phone-message-form div[data-testid="column"]:first-child,
+    .native-message-form div[data-testid="column"]:first-child,
+    body.phone-frame-active .native-message-form div[data-testid="column"]:first-child,
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="column"]:first-child {
+        flex: 1 1 calc(100% - 50px) !important;
+        width: calc(100% - 50px) !important;
+        min-width: 0 !important;
+        max-width: calc(100% - 50px) !important;
+    }
+
+    .phone-message-form div[data-testid="column"]:last-child,
+    .native-message-form div[data-testid="column"]:last-child,
+    body.phone-frame-active .native-message-form div[data-testid="column"]:last-child,
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="column"]:last-child {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+        align-self: flex-end !important;
+    }
+
+    .phone-message-form div[data-testid="stTextArea"],
+    .native-message-form div[data-testid="stTextArea"],
+    body.phone-frame-active .native-message-form div[data-testid="stTextArea"],
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stTextArea"],
+    .phone-message-form div[data-testid="stTextAreaRootElement"],
+    .native-message-form div[data-testid="stTextAreaRootElement"],
+    body.phone-frame-active .native-message-form div[data-testid="stTextAreaRootElement"],
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stTextAreaRootElement"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .phone-message-form textarea[placeholder="Message..."],
+    .native-message-form textarea[placeholder="Message..."],
+    body.phone-frame-active .native-message-form textarea[placeholder="Message..."],
+    .phone-screen #phone-form-anchor.phone-message-form textarea[placeholder="Message..."] {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        resize: none !important;
+        overflow-x: hidden !important;
+        white-space: pre-wrap !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+    }
+
+    .phone-message-form div[data-testid="stFormSubmitButton"],
+    .native-message-form div[data-testid="stFormSubmitButton"],
+    body.phone-frame-active .native-message-form div[data-testid="stFormSubmitButton"],
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stFormSubmitButton"] {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        align-self: flex-end !important;
+    }
+
+    .phone-message-form div[data-testid="stFormSubmitButton"] button,
+    .native-message-form div[data-testid="stFormSubmitButton"] button,
+    body.phone-frame-active .native-message-form div[data-testid="stFormSubmitButton"] button,
+    .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stFormSubmitButton"] button {
+        flex: 0 0 42px !important;
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        min-height: 42px !important;
+        max-width: 42px !important;
+        max-height: 42px !important;
+        align-self: flex-end !important;
+        flex-shrink: 0 !important;
+    }
+
+    @media (max-width: 480px) {
+        .phone-message-form div[data-testid="stForm"],
+        body.phone-frame-active .native-message-form div[data-testid="stForm"],
+        .phone-screen #phone-form-anchor.phone-message-form div[data-testid="stForm"] {
+            width: min(calc(100% - 44px), 340px) !important;
+            max-width: 340px !important;
+        }
+
+        .native-message-form div[data-testid="stForm"] {
+            width: 100vw !important;
+            max-width: 100vw !important;
+        }
+    }
+
 
     .participant-complete {
         max-width: 390px;
@@ -525,23 +936,105 @@ def inject_mobile_css():
     components.html(
         """
         <script>
-        function autoGrowTextArea() {
-            const textarea = window.parent.document.querySelector('textarea[placeholder="Message..."]');
-            if (!textarea) return;
-            textarea.style.height = '42px';
-            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
-            textarea.scrollTop = textarea.scrollHeight;
-        }
-        function bindAutoGrow() {
-            const textarea = window.parent.document.querySelector('textarea[placeholder="Message..."]');
-            if (!textarea || textarea.dataset.autogrowBound === '1') return;
-            textarea.dataset.autogrowBound = '1';
-            textarea.addEventListener('input', autoGrowTextArea);
-            textarea.addEventListener('focus', autoGrowTextArea);
-            autoGrowTextArea();
-        }
-        setInterval(bindAutoGrow, 150);
-        setInterval(autoGrowTextArea, 200);
+        (function () {
+            const parentDoc = window.parent.document;
+            const parentWin = window.parent;
+
+            function syncFrameModeClass() {
+                const hasPhoneShell = !!parentDoc.querySelector('.phone-shell');
+                parentDoc.body.classList.toggle('phone-frame-active', hasPhoneShell);
+            }
+
+            function getComposer() {
+                return parentDoc.querySelector('.native-message-form div[data-testid="stForm"]') ||
+                       parentDoc.querySelector('.phone-message-form div[data-testid="stForm"]') ||
+                       parentDoc.querySelector('div[data-testid="stForm"]');
+            }
+
+            function getTextarea() {
+                return parentDoc.querySelector('textarea[placeholder="Message..."]');
+            }
+
+            function movePhoneFormIntoFrame() {
+                const anchor = parentDoc.querySelector('#phone-form-anchor.phone-message-form');
+                const textarea = getTextarea();
+                if (!anchor || !textarea || parentDoc.querySelector('.native-message-form')) return;
+                const form = textarea.closest('div[data-testid="stForm"]');
+                if (!form || anchor.contains(form)) return;
+                const wrapper = form.closest('div[data-testid="stLayoutWrapper"]') || form;
+                anchor.appendChild(wrapper);
+            }
+
+            function scrollMessagesToBottom() {
+                const messages = parentDoc.querySelector('#phone-messages');
+                if (messages) messages.scrollTop = messages.scrollHeight;
+            }
+
+            function updateViewportVars() {
+                syncFrameModeClass();
+                movePhoneFormIntoFrame();
+                const root = parentDoc.documentElement;
+                const vv = parentWin.visualViewport;
+                const viewportHeight = vv ? vv.height : parentWin.innerHeight;
+                const keyboardOffset = vv ? Math.max(0, parentWin.innerHeight - vv.height - vv.offsetTop) : 0;
+                const composer = getComposer();
+                const composerHeight = composer ? composer.getBoundingClientRect().height : 78;
+
+                root.style.setProperty('--chat-vvh', viewportHeight + 'px');
+                root.style.setProperty('--keyboard-offset', keyboardOffset + 'px');
+                root.style.setProperty('--composer-height', Math.ceil(composerHeight) + 'px');
+                scrollMessagesToBottom();
+            }
+
+            function autoGrowTextArea() {
+                const textarea = getTextarea();
+                if (!textarea) return;
+                const isNative = !!parentDoc.querySelector('.native-message-form');
+                const viewportHeight = parentWin.visualViewport ? parentWin.visualViewport.height : parentWin.innerHeight;
+                const phoneScreen = parentDoc.querySelector('.phone-screen');
+                const screenHeight = phoneScreen ? phoneScreen.getBoundingClientRect().height : viewportHeight;
+                const maxHeight = isNative
+                    ? Math.min(viewportHeight * 0.30, 160)
+                    : Math.min(screenHeight * 0.24, 150);
+                textarea.style.height = '44px';
+                textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
+                textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+                textarea.scrollTop = textarea.scrollHeight;
+                updateViewportVars();
+            }
+
+            function bindAutoGrow() {
+                movePhoneFormIntoFrame();
+                const textarea = getTextarea();
+                if (!textarea) return;
+                textarea.setAttribute('rows', '1');
+                textarea.setAttribute('autocomplete', 'off');
+                textarea.setAttribute('autocorrect', 'on');
+                textarea.setAttribute('autocapitalize', 'sentences');
+                if (textarea.dataset.autogrowBound === '1') {
+                    autoGrowTextArea();
+                    return;
+                }
+                textarea.dataset.autogrowBound = '1';
+                textarea.addEventListener('input', autoGrowTextArea);
+                textarea.addEventListener('focus', function () {
+                    setTimeout(autoGrowTextArea, 60);
+                    setTimeout(autoGrowTextArea, 300);
+                });
+                textarea.addEventListener('blur', updateViewportVars);
+                autoGrowTextArea();
+            }
+
+            syncFrameModeClass();
+            if (parentWin.visualViewport) {
+                parentWin.visualViewport.addEventListener('resize', updateViewportVars);
+                parentWin.visualViewport.addEventListener('scroll', updateViewportVars);
+            }
+            parentWin.addEventListener('resize', updateViewportVars);
+
+            setInterval(bindAutoGrow, 150);
+            setInterval(updateViewportVars, 250);
+        })();
         </script>
         """,
         height=0,
@@ -654,7 +1147,8 @@ def render_mobile_shell(
         html_parts.append('</div>')
 
     html_parts.append('</div>')
-    html_parts.append('<div class="input-spacer"></div>')
+    if use_phone_shell:
+        html_parts.append('<div id="phone-form-anchor" class="phone-message-form"></div>')
     html_parts.append('</div>')
     if use_phone_shell:
         html_parts.append('</div>')
@@ -682,7 +1176,7 @@ def render_mobile_shell(
 
 
 def mobile_message_form(disabled: bool = False, native: bool = False):
-    wrapper_class = "native-message-form" if native else "phone-message-form"
+    wrapper_class = "native-message-form" if native else "phone-message-form-source"
     st.markdown(f'<div class="{wrapper_class}">', unsafe_allow_html=True)
 
     with st.form("mobile_message_form", clear_on_submit=True):
@@ -694,7 +1188,7 @@ def mobile_message_form(disabled: bool = False, native: bool = False):
                 label_visibility="collapsed",
                 disabled=disabled,
                 key="mobile_message_input",
-                height=42,
+                height=44,
             )
         with col_button:
             submitted = st.form_submit_button("➤", disabled=disabled)
