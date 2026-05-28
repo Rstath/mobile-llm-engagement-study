@@ -922,6 +922,224 @@ def inject_mobile_css():
     }
 
 
+
+
+    /* ==========================================================
+       REAL MOBILE / TABLET NATIVE CHAT FIX
+       Used when device_type is Mobile or Tablet and use_phone_shell=False.
+       Keeps the chat full-screen, keyboard-safe, and composer one line.
+       ========================================================== */
+    @media (hover: none) and (pointer: coarse), (max-width: 1024px) {
+        html,
+        body,
+        .stApp,
+        [data-testid="stAppViewContainer"],
+        [data-testid="stMain"],
+        [data-testid="stMainBlockContainer"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        [data-testid="stHeader"],
+        header,
+        footer,
+        [data-testid="stSidebar"],
+        [data-testid="collapsedControl"],
+        [data-testid="stSidebarCollapsedControl"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+        }
+
+        .native-chat-screen {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            height: var(--chat-vvh, 100dvh) !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #f2f2f7 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            z-index: 10 !important;
+        }
+
+        .native-chat-screen .phone-header {
+            flex: 0 0 auto !important;
+            padding-top: max(10px, env(safe-area-inset-top)) !important;
+            background: #f8f8fb !important;
+            border-bottom: 1px solid #dedee5 !important;
+        }
+
+        .native-chat-screen .phone-messages {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            height: auto !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding: 12px 12px calc(var(--composer-height, 76px) + max(14px, env(safe-area-inset-bottom))) 12px !important;
+            box-sizing: border-box !important;
+        }
+
+        .native-message-form div[data-testid="stForm"] {
+            position: fixed !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: var(--keyboard-offset, 0px) !important;
+            transform: none !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 8px max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
+            background: rgba(242, 242, 247, 0.98) !important;
+            border: 0 !important;
+            border-top: 1px solid rgba(0,0,0,0.08) !important;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.04) !important;
+            box-sizing: border-box !important;
+            z-index: 9999 !important;
+            overflow: visible !important;
+        }
+
+        .native-message-form div[data-testid="stForm"] > div,
+        .native-message-form div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            align-items: flex-end !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+        }
+
+        .native-message-form div[data-testid="column"] {
+            display: flex !important;
+            flex-direction: column !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .native-message-form div[data-testid="column"]:first-child {
+            flex: 1 1 auto !important;
+            width: auto !important;
+            max-width: calc(100% - 52px) !important;
+            min-width: 0 !important;
+        }
+
+        .native-message-form div[data-testid="column"]:last-child {
+            flex: 0 0 44px !important;
+            width: 44px !important;
+            min-width: 44px !important;
+            max-width: 44px !important;
+            align-self: flex-end !important;
+        }
+
+        .native-message-form div[data-testid="stTextArea"],
+        .native-message-form div[data-testid="stTextAreaRootElement"],
+        .native-message-form div[data-baseweb="base-input"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        .native-message-form div[data-testid="stTextArea"] label {
+            display: none !important;
+        }
+
+        .native-message-form div[data-testid="stTextAreaRootElement"] {
+            background: #ffffff !important;
+            border: 1px solid #d1d1d6 !important;
+            border-radius: 22px !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+
+        .native-message-form div[data-baseweb="base-input"] {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 22px !important;
+            overflow: hidden !important;
+        }
+
+        .native-message-form textarea[placeholder="Message..."] {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            min-height: 44px !important;
+            height: 44px;
+            max-height: min(30dvh, 160px) !important;
+            padding: 10px 16px !important;
+            font-size: 16px !important;
+            line-height: 1.35 !important;
+            color: #111111 !important;
+            background: #ffffff !important;
+            border: 0 !important;
+            border-radius: 22px !important;
+            box-shadow: none !important;
+            outline: none !important;
+            resize: none !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            white-space: pre-wrap !important;
+            overflow-wrap: break-word !important;
+            word-break: break-word !important;
+            caret-color: #0A84FF !important;
+            box-sizing: border-box !important;
+            -webkit-text-size-adjust: 100% !important;
+        }
+
+        .native-message-form div[data-testid="stTextAreaRootElement"]:focus-within {
+            border-color: #0A84FF !important;
+            box-shadow: 0 0 0 1px rgba(10,132,255,0.15) !important;
+        }
+
+        .native-message-form div[data-testid="stFormSubmitButton"],
+        .native-message-form div[data-testid="stFormSubmitButton"] button {
+            flex: 0 0 44px !important;
+            width: 44px !important;
+            min-width: 44px !important;
+            max-width: 44px !important;
+            height: 44px !important;
+            min-height: 44px !important;
+            max-height: 44px !important;
+            align-self: flex-end !important;
+            flex-shrink: 0 !important;
+        }
+
+        .native-message-form div[data-testid="stFormSubmitButton"] button {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            border: 0 !important;
+            border-radius: 50% !important;
+            background: #0A84FF !important;
+            color: #ffffff !important;
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            line-height: 1 !important;
+            box-shadow: none !important;
+        }
+
+        .native-message-form div[data-testid="stFormSubmitButton"] button p {
+            color: #ffffff !important;
+            margin: 0 !important;
+            line-height: 1 !important;
+        }
+    }
     .participant-complete {
         max-width: 390px;
         margin: 0.75rem auto;
