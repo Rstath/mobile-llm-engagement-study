@@ -1188,7 +1188,7 @@ def mobile_message_form(disabled: bool = False, native: bool = False):
                 label_visibility="collapsed",
                 disabled=disabled,
                 key="mobile_message_input",
-                height=44,
+                height=68,  # Streamlit 1.45 requires text_area height >= 68; CSS visually keeps it compact.
             )
         with col_button:
             submitted = st.form_submit_button("➤", disabled=disabled)
