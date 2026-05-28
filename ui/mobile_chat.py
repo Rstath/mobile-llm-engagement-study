@@ -1140,6 +1140,153 @@ def inject_mobile_css():
             line-height: 1 !important;
         }
     }
+
+
+    /* Real mobile fix: Streamlit does not keep st.form inside the marker div
+       created with st.markdown, so target the form through a body class instead. */
+    body.native-chat-active .block-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100vw !important;
+        width: 100vw !important;
+        overflow: hidden !important;
+    }
+
+    body.native-chat-active .native-chat-screen {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: calc(var(--chat-vvh, 100dvh) - var(--composer-height, 78px)) !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #f2f2f7 !important;
+    }
+
+    body.native-chat-active .native-chat-screen .phone-messages {
+        height: 100% !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        padding-bottom: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    body.native-chat-active div[data-testid="stForm"] {
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: var(--keyboard-offset, 0px) !important;
+        transform: none !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding: 8px max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+        background: rgba(242, 242, 247, 0.98) !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.04) !important;
+        box-sizing: border-box !important;
+        z-index: 999999 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    body.native-chat-active div[data-testid="stForm"] > div,
+    body.native-chat-active div[data-testid="stForm"] div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-end !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    body.native-chat-active div[data-testid="stForm"] div[data-testid="column"] {
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body.native-chat-active div[data-testid="stForm"] div[data-testid="column"]:first-child {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        max-width: calc(100% - 52px) !important;
+        min-width: 0 !important;
+    }
+
+    body.native-chat-active div[data-testid="stForm"] div[data-testid="column"]:last-child {
+        flex: 0 0 44px !important;
+        width: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        align-self: flex-end !important;
+    }
+
+    body.native-chat-active div[data-testid="stTextArea"],
+    body.native-chat-active div[data-testid="stTextAreaRootElement"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    body.native-chat-active div[data-testid="stTextArea"] label {
+        display: none !important;
+    }
+
+    body.native-chat-active textarea[placeholder="Message..."] {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: 44px;
+        min-height: 44px !important;
+        max-height: min(30dvh, 160px) !important;
+        resize: none !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        border: 0 !important;
+        border-radius: 22px !important;
+        background: #ffffff !important;
+        color: #111111 !important;
+        padding: 10px 16px !important;
+        font-size: 16px !important;
+        line-height: 1.35 !important;
+        box-sizing: border-box !important;
+        caret-color: #0A84FF !important;
+    }
+
+    body.native-chat-active div[data-testid="stTextAreaRootElement"] {
+        border: 1px solid #d1d1d6 !important;
+        border-radius: 22px !important;
+        background: #ffffff !important;
+        overflow: hidden !important;
+    }
+
+    body.native-chat-active div[data-testid="stFormSubmitButton"],
+    body.native-chat-active div[data-testid="stFormSubmitButton"] button {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        border-radius: 50% !important;
+        flex-shrink: 0 !important;
+    }
+
+    body.native-chat-active div[data-testid="stFormSubmitButton"] button {
+        padding: 0 !important;
+        background: #0A84FF !important;
+        color: #ffffff !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    body.native-chat-active div[data-testid="stFormSubmitButton"] button p {
+        color: #ffffff !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+    }
+
     .participant-complete {
         max-width: 390px;
         margin: 0.75rem auto;
@@ -1160,7 +1307,9 @@ def inject_mobile_css():
 
             function syncFrameModeClass() {
                 const hasPhoneShell = !!parentDoc.querySelector('.phone-shell');
+                const hasNativeChat = !!parentDoc.querySelector('.native-chat-screen');
                 parentDoc.body.classList.toggle('phone-frame-active', hasPhoneShell);
+                parentDoc.body.classList.toggle('native-chat-active', hasNativeChat && !hasPhoneShell);
             }
 
             function getComposer() {
