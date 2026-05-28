@@ -1287,6 +1287,19 @@ def inject_mobile_css():
         line-height: 1 !important;
     }
 
+
+
+    /* Android keyboard safety: on some Android browsers fixed elements stay
+       attached to the layout viewport, so bottom:0 can remain under the keyboard.
+       The JS below adds .android-keyboard-open and sets --android-keyboard-offset. */
+    body.native-chat-active.android-keyboard-open div[data-testid="stForm"] {
+        bottom: var(--android-keyboard-offset, var(--keyboard-offset, 0px)) !important;
+    }
+
+    body.native-chat-active.android-keyboard-open .native-chat-screen {
+        height: calc(var(--chat-vvh, 100dvh) - var(--composer-height, 78px)) !important;
+    }
+
     .participant-complete {
         max-width: 390px;
         margin: 0.75rem auto;
@@ -1304,6 +1317,11 @@ def inject_mobile_css():
         (function () {
             const parentDoc = window.parent.document;
             const parentWin = window.parent;
+            const ua = (parentWin.navigator.userAgent || "").toLowerCase();
+            const isAndroid = ua.includes("android");
+            const isIOS = /iphone|ipad|ipod/.test(ua) || (parentWin.navigator.platform === "MacIntel" && parentWin.navigator.maxTouchPoints > 1);
+            let maxSeenViewportHeight = parentWin.visualViewport ? parentWin.visualViewport.height : parentWin.innerHeight;
+            let lastKeyboardOffset = 0;
 
             function syncFrameModeClass() {
                 const hasPhoneShell = !!parentDoc.querySelector('.phone-shell');
@@ -1343,13 +1361,39 @@ def inject_mobile_css():
                 const root = parentDoc.documentElement;
                 const vv = parentWin.visualViewport;
                 const viewportHeight = vv ? vv.height : parentWin.innerHeight;
-                const keyboardOffset = vv ? Math.max(0, parentWin.innerHeight - vv.height - vv.offsetTop) : 0;
                 const composer = getComposer();
                 const composerHeight = composer ? composer.getBoundingClientRect().height : 78;
 
+                // iOS behavior in your current implementation is kept: use the normal
+                // visualViewport offset calculation. Android gets an additional baseline
+                // calculation because Chrome/Android may report innerHeight after resize,
+                // leaving fixed bottom elements hidden behind the keyboard.
+                if (!vv || !parentDoc.body.classList.contains('native-chat-active')) {
+                    maxSeenViewportHeight = Math.max(maxSeenViewportHeight, viewportHeight);
+                } else if (!isAndroid || !parentDoc.activeElement || parentDoc.activeElement.tagName !== 'TEXTAREA') {
+                    maxSeenViewportHeight = Math.max(maxSeenViewportHeight, viewportHeight);
+                }
+
+                const standardOffset = vv ? Math.max(0, parentWin.innerHeight - vv.height - vv.offsetTop) : 0;
+                const androidOffset = (isAndroid && vv)
+                    ? Math.max(standardOffset, maxSeenViewportHeight - vv.height - vv.offsetTop)
+                    : standardOffset;
+                const keyboardOffset = isAndroid ? androidOffset : standardOffset;
+                lastKeyboardOffset = keyboardOffset;
+
+                const keyboardOpen = keyboardOffset > 40;
+                parentDoc.body.classList.toggle('android-keyboard-open', isAndroid && keyboardOpen);
+
                 root.style.setProperty('--chat-vvh', viewportHeight + 'px');
-                root.style.setProperty('--keyboard-offset', keyboardOffset + 'px');
+                root.style.setProperty('--keyboard-offset', standardOffset + 'px');
+                root.style.setProperty('--android-keyboard-offset', keyboardOffset + 'px');
                 root.style.setProperty('--composer-height', Math.ceil(composerHeight) + 'px');
+
+                if (isAndroid && keyboardOpen && composer) {
+                    composer.style.bottom = keyboardOffset + 'px';
+                } else if (composer) {
+                    composer.style.removeProperty('bottom');
+                }
                 scrollMessagesToBottom();
             }
 
@@ -1387,6 +1431,13 @@ def inject_mobile_css():
                 textarea.addEventListener('focus', function () {
                     setTimeout(autoGrowTextArea, 60);
                     setTimeout(autoGrowTextArea, 300);
+                    if (isAndroid) {
+                        setTimeout(function () {
+                            updateViewportVars();
+                            const composer = getComposer();
+                            if (composer) composer.scrollIntoView({ block: 'end', inline: 'nearest' });
+                        }, 450);
+                    }
                 });
                 textarea.addEventListener('blur', updateViewportVars);
                 autoGrowTextArea();
